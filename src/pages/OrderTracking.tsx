@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { ArrowLeft, Phone, MessageCircle, MapPin, Clock, CheckCircle2, ChefHat, Bike, Package } from "lucide-react";
 import { motion } from "framer-motion";
+import LiveMap from "@/components/tracking/LiveMap";
 
 type OrderStatus = "placed" | "confirmed" | "preparing" | "out_for_delivery" | "delivered";
 
@@ -30,6 +31,7 @@ const orderItems = [
 const OrderTracking = () => {
   const [currentStatus, setCurrentStatus] = useState<OrderStatus>("placed");
   const [eta, setEta] = useState(25);
+  const [riderProgress, setRiderProgress] = useState(0);
 
   const currentIndex = steps.findIndex(s => s.key === currentStatus);
 
@@ -50,6 +52,23 @@ const OrderTracking = () => {
 
     return () => clearInterval(interval);
   }, []);
+
+  // Simulate rider movement when out for delivery
+  useEffect(() => {
+    if (currentStatus === "out_for_delivery") {
+      setRiderProgress(0.05);
+      const interval = setInterval(() => {
+        setRiderProgress(prev => {
+          if (prev >= 0.9) { clearInterval(interval); return 0.9; }
+          return prev + 0.08 + Math.random() * 0.05;
+        });
+      }, 800);
+      return () => clearInterval(interval);
+    }
+    if (currentStatus === "delivered") {
+      setRiderProgress(1);
+    }
+  }, [currentStatus]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -90,6 +109,11 @@ const OrderTracking = () => {
             </motion.div>
           </div>
         </motion.div>
+
+        {/* Live Map */}
+        {(currentStatus === "out_for_delivery" || currentStatus === "delivered") && (
+          <LiveMap progress={riderProgress} isActive={currentStatus === "out_for_delivery"} />
+        )}
 
         {/* Progress Steps */}
         <div className="bg-card rounded-2xl border border-border/50 p-6 mb-6">
