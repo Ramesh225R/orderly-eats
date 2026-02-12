@@ -1,11 +1,15 @@
 import { Link, useLocation } from "react-router-dom";
-import { Search, ShoppingBag, User, MapPin } from "lucide-react";
+import { Search, ShoppingBag, User, MapPin, LogOut, Shield } from "lucide-react";
 import { useCart } from "@/context/CartContext";
+import { useAuth } from "@/context/AuthContext";
 import { motion, AnimatePresence } from "framer-motion";
 
 const Header = () => {
   const { totalItems, setIsOpen } = useCart();
+  const { user, isAdmin, signOut } = useAuth();
   const location = useLocation();
+
+  if (location.pathname === "/auth") return null;
 
   return (
     <header className="sticky top-0 z-50 glass shadow-sm">
@@ -35,10 +39,27 @@ const Header = () => {
         </div>
 
         <div className="flex items-center gap-2">
-          <Link to="/" className="hidden md:flex items-center gap-1 px-3 py-2 text-sm font-medium rounded-full hover:bg-secondary transition-colors">
-            <User className="w-4 h-4" />
-            <span>Sign In</span>
-          </Link>
+          {isAdmin && (
+            <Link to="/admin" className="hidden md:flex items-center gap-1 px-3 py-2 text-sm font-medium rounded-full hover:bg-secondary transition-colors text-primary">
+              <Shield className="w-4 h-4" />
+              <span>Admin</span>
+            </Link>
+          )}
+
+          {user ? (
+            <button
+              onClick={signOut}
+              className="hidden md:flex items-center gap-1 px-3 py-2 text-sm font-medium rounded-full hover:bg-secondary transition-colors"
+            >
+              <LogOut className="w-4 h-4" />
+              <span>Sign Out</span>
+            </button>
+          ) : (
+            <Link to="/auth" className="hidden md:flex items-center gap-1 px-3 py-2 text-sm font-medium rounded-full hover:bg-secondary transition-colors">
+              <User className="w-4 h-4" />
+              <span>Sign In</span>
+            </Link>
+          )}
 
           <button
             onClick={() => setIsOpen(true)}
